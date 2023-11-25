@@ -11,6 +11,9 @@ use Slim\Factory\AppFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
 
+require './dao/ClienteDAO.php';
+require_once './controller/ClienteController.php';
+
 // Instantiate App
 $app = AppFactory::create();
 
@@ -27,21 +30,19 @@ $app->get('[/]', function (Request $request, Response $response) {
     return $response->withHeader('Content-Type', 'application/json');
 });
 
-//$pdo = new PDO('mysql:host=localhost;dbname=segundoparcial;charset=utf8', 'root', '', array(PDO::ATTR_EMULATE_PREPARES => false, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+$pdo = new PDO('mysql:host=localhost;dbname=segundoparcialprograiii;charset=utf8', 'root', '', array(PDO::ATTR_EMULATE_PREPARES => false, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 
 
-// $usuarioDAO = new UsuarioDAO($pdo);
-// $usuarioController = new UsuarioController($usuarioDAO);
-// // Grupo de rutas para usuarios
-// $app->group('/usuarios', function (RouteCollectorProxy $group) use ($usuarioController) {
-//     $group->get('[/]', [$usuarioController, 'listarUsuarios'])->add(\AuthTokenMiddleware::class . ":validarSocio");
-//     $group->get('/traerUno', [$usuarioController, 'listarUsuarioPorId'])->add(\AuthTokenMiddleware::class . ":validarSocio");
-//     $group->post('[/]', [$usuarioController, 'altaUsuario'])->add(\AuthTokenMiddleware::class . ":validarSocio");
-//     $group->put('[/]', [$usuarioController, 'modificarUsuarioPorId'])->add(\AuthTokenMiddleware::class . ":validarSocio");
-//     $group->get('/borrar', [$usuarioController, 'borrarUsuarioPorId'])->add(\AuthTokenMiddleware::class . ":validarSocio");
-//     $group->get('/login', [$usuarioController, 'login']);
-// });
-
+$clienteDAO = new ClienteDAO($pdo);
+$clienteController = new ClienteController($clienteDAO);
+// Grupo de rutas para clientes
+$app->group('/clientes', function (RouteCollectorProxy $group) use ($clienteController) {
+    $group->get('[/]', [$clienteController, 'listarClientes']);
+    $group->get('/traerUno', [$clienteController, 'consultarCliente']);
+    $group->post('[/]', [$clienteController, 'crearCliente']);
+    $group->put('[/]', [$clienteController, 'modificar']);
+    $group->get('/borrar', [$clienteController, 'borrar']);
+});
 
 $app->run();
 ?>
