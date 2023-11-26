@@ -73,5 +73,32 @@ class ClienteDAO
             return false;
         }
     }
+    public function darDeBajaCliente($id)
+    {
+        try {
+            $horaDeBaja = date('Y-m-d H:i:s');
+            $sql = "UPDATE clientes SET activo = 0, horaDeBaja = ? WHERE ID = ? AND activo = 1";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$horaDeBaja, $id]);
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            echo 'Error al dar de baja el cliente: ' . $e->getMessage();
+            return false;
+        }
+    }
+    public function obtenerCliente($id, $tipoCliente)
+    {
+        try {
+            $tipoCliente = strtoupper($tipoCliente);
+            $sql = "SELECT * FROM clientes WHERE ID = ? AND tipo LIKE CONCAT('%', ?, '%') AND activo = 1";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$id, $tipoCliente]);
+            $cliente = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $cliente;
+        } catch (PDOException $e) {
+            echo 'Error al obtener cliente: ' . $e->getMessage();
+            return false;
+        }
+    }
 }
 ?>

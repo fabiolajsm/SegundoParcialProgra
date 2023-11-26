@@ -81,6 +81,49 @@ class ClienteController
             return $response->withStatus(500)->withJson(['error' => 'No se pudo crear el cliente']);
         }
     }
+    public function borrarCliente(Request $request, ResponseInterface $response)
+    {
+        try {
+            $parametros = $request->getQueryParams();
+            $nroCliente = $parametros['nroCliente'] ?? null;
+            $tipoCliente = $parametros['tipoCliente'] ?? null;
+            $tiposCliente = array('INDI', 'CORPO');
+
+            if ($nroCliente == null || $tipoCliente == null) {
+                return $response->withStatus(400)->withJson(['error' => 'Debe ingresar el número de cliente y el tipo del cliente para dar de baja.']);
+            }
+            $tipo = strtoupper($tipoCliente);
+            if (!in_array($tipo, $tiposCliente)) {
+                return $response->withStatus(400)->withJson(['error' => 'Tipo de cliente incorrecto. Debe ser de tipo: INDI o CORPO.']);
+            }
+            $cliente = $this->clienteDAO->obtenerCliente($nroCliente, $tipoCliente);
+            if (!$cliente) {
+                return $response->withStatus(404)->withJson(['error' => 'No se encontró el cliente para dar de baja.']);
+            }
+
+            $resultado = $this->clienteDAO->darDeBajaCliente($nroCliente);
+            if (!$resultado) {
+                return $response->withStatus(500)->withJson(['error' => 'Error al dar de baja el cliente.']);
+            }
+            $mensajeExito = 'Cliente borrado exitosamente, pero hubo un problema al guardar la imagen';
+            $idFormateado = sprintf('%06d', $cliente['ID']);
+            $nombreDeLaImagenCliente = $idFormateado . $cliente['tipo'];
+            $imagenCliente = './datos/ImagenesDeClientes/2023/' . $nombreDeLaImagenCliente . '.jpg';
+            $carpetaRespaldo = './ImagenesBackupClientes/2023/';
+            if (file_exists($imagenCliente)) {
+                if (!file_exists($carpetaRespaldo)) {
+                    mkdir($carpetaRespaldo, 0777, true);
+                }
+                $nuevaRuta = $carpetaRespaldo . strtoupper($idFormateado) . 'ELIMINADO' . '.jpg';
+                if (rename($imagenCliente, $nuevaRuta)) {
+                    $mensajeExito = 'Cliente borrado exitosamente.';
+                }
+            }
+            return $response->withStatus(500)->withJson(['mensaje' => $mensajeExito]);
+        } catch (PDOException $e) {
+            return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
+        }
+    }
 
     public function listarClientes(Request $request, ResponseInterface $response)
     {

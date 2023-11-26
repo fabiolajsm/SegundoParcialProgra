@@ -42,9 +42,9 @@ $app->group('/clientes', function (RouteCollectorProxy $group) use ($clienteCont
     $group->get('[/]', [$clienteController, 'listarClientes']);
     $group->get('/traerUno', [$clienteController, 'consultarCliente']);
     $group->post('[/]', [$clienteController, 'crearCliente']);
-    // faltan estos dos
+    $group->delete('/borrarCliente', [$clienteController, 'borrarCliente']);
+    // faltan este
     $group->put('[/]', [$clienteController, 'modificar']);
-    $group->get('/borrar', [$clienteController, 'borrar']);
 });
 
 $reservaDAO = new ReservaDAO($pdo);
