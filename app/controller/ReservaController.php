@@ -169,4 +169,30 @@ class ReservaController
             return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
         }
     }
+    /* d- El listado de reservas por tipo de habitación. */
+    public function listarReservasPorTipoHabitacion(Request $request, ResponseInterface $response)
+    {
+        try {
+            $parametros = $request->getQueryParams();
+            $tiposHabitacion = array('SIMPLE', 'DOBLE', 'SUITE');
+            $tipoHabitacion = $parametros['tipoHabitacion'] ?? null;
+
+            if ($tipoHabitacion == null) {
+                return $response->withStatus(400)->withJson(['error' => 'Tiene que ingresar un tipo de habitación']);
+            }
+            $tipoHabitacion = strtoupper($tipoHabitacion);
+            if (!in_array($tipoHabitacion, $tiposHabitacion)) {
+                return $response->withStatus(400)->withJson(['error' => 'Tipo de habitacion incorrecto. Debe ser de tipo: SIMPLE, DOBLE o SUITE.']);
+            }
+
+            $reservas = $this->reservaDAO->obtenerReservasPorTipoHabitacion($tipoHabitacion);
+            if ($reservas) {
+                return $response->withStatus(200)->withJson($reservas);
+            } else {
+                return $response->withStatus(404)->withJson(['error' => 'No se encontraron reservas para el tipo de habitación proporcionado.']);
+            }
+        } catch (PDOException $e) {
+            return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
+        }
+    }
 }

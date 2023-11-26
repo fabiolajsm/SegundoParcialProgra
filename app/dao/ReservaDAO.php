@@ -84,5 +84,17 @@ class ReservaDAO
             return false;
         }
     }
+    public function obtenerReservasPorTipoHabitacion($tipoHabitacion)
+    {
+        try {
+            $stmt = $this->pdo->prepare("SELECT * FROM reservas WHERE tipoHabitacion = ? AND activo = 1");
+            $stmt->execute([strtoupper($tipoHabitacion)]);
+            $reservas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $reservas;
+        } catch (PDOException $e) {
+            echo 'Error al obtener las reservas por tipo de habitación: ' . $e->getMessage();
+            return false;
+        }
+    }
 }
 ?>
