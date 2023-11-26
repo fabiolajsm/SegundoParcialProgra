@@ -240,10 +240,108 @@ class ReservaController
         }
     }
     /* c.2- El listado de cancelaciones entre dos fechas ordenado por fecha.*/
+    public function listarCancelacionesEntreFechas(Request $request, ResponseInterface $response)
+    {
+        try {
+            $parametros = $request->getQueryParams();
+            $fechaInicio = $parametros['fechaInicio'] ?? null;
+            $fechaFin = $parametros['fechaFin'] ?? null;
+
+            if ($fechaInicio == null || $fechaFin == null) {
+                return $response->withStatus(400)->withJson(['error' => 'Debe ingresar las fechas de inicio y fin para la consulta de cancelaciones.']);
+            }
+
+            try {
+                $fechaInicioObj = new DateTime($fechaInicio);
+                $fechaFinObj = new DateTime($fechaFin);
+            } catch (Exception $e) {
+                return $response->withStatus(400)->withJson(['error' => 'Error: Las fechas proporcionadas no son válidas.']);
+            }
+
+            $fechaInicioFormateada = $fechaInicioObj->format('Y-m-d');
+            $fechaFinFormateada = $fechaFinObj->format('Y-m-d');
+
+            $cancelaciones = $this->reservaDAO->obtenerCancelacionesEntreFechas($fechaInicioFormateada, $fechaFinFormateada);
+            if ($cancelaciones) {
+                // Ordenar las cancelaciones por fecha
+                usort($cancelaciones, function ($a, $b) {
+                    return strtotime($a['fechaCancelacion']) - strtotime($b['fechaCancelacion']);
+                });
+                return $response->withStatus(200)->withJson($cancelaciones);
+            } else {
+                return $response->withStatus(404)->withJson(['error' => 'No se encontraron cancelaciones entre las fechas proporcionadas.']);
+            }
+        } catch (PDOException $e) {
+            return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
+        }
+    }
 
     /* d.2- El listado de cancelaciones por tipo de cliente.*/
+    public function listarCancelacionesPorTipoCliente(Request $request, ResponseInterface $response)
+    {
+        try {
+            $parametros = $request->getQueryParams();
+            $tiposCliente = array('INDI', 'CORPO');
+            $tipoCliente = $parametros['tipoCliente'] ?? null;
 
-    /* e.2- El listado de todas las operaciones (reservas y cancelaciones) por usuario.*/
+            if ($tipoCliente == null) {
+                return $response->withStatus(400)->withJson(['error' => 'Tiene que ingresar un tipo de cliente']);
+            }
+            $tipoCliente = strtoupper($tipoCliente);
+            if (!in_array($tipoCliente, $tiposCliente)) {
+                return $response->withStatus(400)->withJson(['error' => 'Tipo de cliente incorrecto. Debe ser de tipo: INDI o CORPO.']);
+            }
 
-    /* f.2- El listado de Reservas por tipo de modalidad. */
+            $cancelaciones = $this->reservaDAO->obtenerCancelacionesPorTipoCliente($tipoCliente);
+            if ($cancelaciones) {
+                return $response->withStatus(200)->withJson($cancelaciones);
+            } else {
+                return $response->withStatus(404)->withJson(['error' => 'No se encontraron cancelaciones para el tipo de cliente proporcionado.']);
+            }
+        } catch (PDOException $e) {
+            return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
+        }
+    }
+    /* e - El listado de todas las operaciones (reservas y cancelaciones) por usuario.*/
+    public function listarOperacionesPorCliente(Request $request, ResponseInterface $response)
+    {
+        try {
+            $parametros = $request->getQueryParams();
+            $nroCliente = $parametros['nroCliente'] ?? null;
+
+            if ($nroCliente == null) {
+                return $response->withStatus(400)->withJson(['error' => 'Tiene que ingresar un nroCliente']);
+            }
+
+            $operaciones = $this->reservaDAO->obtenerOperacionesPorCliente($nroCliente);
+            if ($operaciones) {
+                return $response->withStatus(200)->withJson($operaciones);
+            } else {
+                return $response->withStatus(404)->withJson(['error' => 'No se encontraron operaciones para el nroCliente proporcionado.']);
+            }
+        } catch (PDOException $e) {
+            return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
+        }
+    }
+    /* f - El listado de Reservas por tipo de modalidad. */
+    public function listarReservasPorModalidad(Request $request, ResponseInterface $response)
+    {
+        try {
+            $parametros = $request->getQueryParams();
+            $modalidad = $parametros['modalidad'] ?? null;
+
+            if ($modalidad == null) {
+                return $response->withStatus(400)->withJson(['error' => 'Tiene que ingresar una modalidad']);
+            }
+
+            $reservas = $this->reservaDAO->obtenerReservasPorModalidad($modalidad);
+            if ($reservas) {
+                return $response->withStatus(200)->withJson($reservas);
+            } else {
+                return $response->withStatus(404)->withJson(['error' => 'No se encontraron reservas para la modalidad proporcionada.']);
+            }
+        } catch (PDOException $e) {
+            return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
+        }
+    }
 }

@@ -103,7 +103,7 @@ class ReservaDAO
                 $fecha = date('Y-m-d', strtotime('-1 day'));
             }
             $tipoBusqueda = '%' . $tipoCliente . '%';
-            $stmt = $this->pdo->prepare("SELECT tipoCliente, COUNT(*) as totalCancelaciones FROM reservas WHERE tipoCliente LIKE ? AND activo = 0 AND horaDeBaja LIKE ? GROUP BY tipoCliente");
+            $stmt = $this->pdo->prepare("SELECT tipoCliente, COUNT(*) as totalCancelaciones FROM reservas WHERE tipoCliente LIKE ? AND activo = 0 AND fechaCancelacion LIKE ? GROUP BY tipoCliente");
             $stmt->execute([$tipoBusqueda, $fecha . '%']);
             $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return $resultados;
@@ -121,6 +121,67 @@ class ReservaDAO
             return $cancelaciones;
         } catch (PDOException $e) {
             echo 'Error al obtener las cancelaciones por cliente: ' . $e->getMessage();
+            return false;
+        }
+    }
+    public function obtenerCancelacionesEntreFechas($fechaInicio, $fechaFin)
+    {
+        try {
+            $stmt = $this->pdo->prepare("SELECT * FROM reservas WHERE activo = 0 AND fechaCancelacion BETWEEN ? AND ?");
+            $stmt->execute([$fechaInicio, $fechaFin]);
+            $cancelaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $cancelaciones;
+        } catch (PDOException $e) {
+            echo 'Error al obtener las cancelaciones entre fechas: ' . $e->getMessage();
+            return false;
+        }
+    }
+    public function obtenerCancelacionesPorTipoCliente($tipoCliente)
+    {
+        try {
+            $tipoClienteBusqueda = '%' . strtoupper($tipoCliente) . '%';
+            $stmt = $this->pdo->prepare("SELECT * FROM reservas WHERE activo = 0 AND tipoCliente LIKE ?");
+            $stmt->execute([$tipoClienteBusqueda]);
+            $cancelaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $cancelaciones;
+        } catch (PDOException $e) {
+            echo 'Error al obtener las cancelaciones por tipo de cliente: ' . $e->getMessage();
+            return false;
+        }
+    }
+    public function obtenerOperacionesPorCliente($nroCliente)
+    {
+        try {
+            $stmt = $this->pdo->prepare("SELECT * FROM reservas WHERE nroCliente = ?");
+            $stmt->execute([$nroCliente]);
+            $operaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $operaciones;
+        } catch (PDOException $e) {
+            echo 'Error al obtener las operaciones por nroCliente: ' . $e->getMessage();
+            return false;
+        }
+    }
+    public function obtenerReservasPorModalidad($modalidad)
+    {
+        try {
+            // Buscar los clientes que tienen esa modalidad de pago
+            $stmtClientes = $this->pdo->prepare("SELECT ID FROM clientes WHERE modalidadPago = ? AND activo = 1");
+            $stmtClientes->execute([$modalidad]);
+            $clientes = $stmtClientes->fetchAll(PDO::FETCH_ASSOC);
+
+            // Obtener las reservas de los clientes encontrados
+            $nrosClientes = array_column($clientes, 'ID');
+            $placeholders = rtrim(str_repeat('?, ', count($nrosClientes)), ', ');
+
+            if (empty($nrosClientes)) {
+                return []; // No hay clientes con esa modalidad de pago
+            }
+            $stmtReservas = $this->pdo->prepare("SELECT * FROM reservas WHERE nroCliente IN ($placeholders)");
+            $stmtReservas->execute($nrosClientes);
+            $reservas = $stmtReservas->fetchAll(PDO::FETCH_ASSOC);
+            return $reservas;
+        } catch (PDOException $e) {
+            echo 'Error al obtener las reservas por modalidad: ' . $e->getMessage();
             return false;
         }
     }
