@@ -124,7 +124,90 @@ class ClienteController
             return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
         }
     }
+    public function modificarCliente(Request $request, ResponseInterface $response)
+    {
+        try {
+            $data = $request->getParsedBody();
+            $idCliente = $data['idCliente'] ?? null;
+            $nombre = $data['nombre'] ?? null;
+            $apellido = $data['apellido'] ?? null;
+            $tipoDocumento = $data['tipoDocumento'] ?? null;
+            $nroDocumento = $data['nroDocumento'] ?? null;
+            $tipo = $data['tipo'] ?? null;
+            $pais = $data['pais'] ?? null;
+            $ciudad = $data['ciudad'] ?? null;
+            $email = $data['email'] ?? null;
+            $telefono = $data['telefono'] ?? null;
+            $modalidadPago = $data['modalidadPago'] ?? null;
 
+            $tiposCliente = array('INDI', 'CORPO');
+            $tiposDocumentos = array('DNI', 'LE', 'LC', 'PASAPORTE');
+            $modalidadesDePago = array('EFECTIVO', 'TARJETA', 'MERCADO PAGO');
+
+            if ($nombre === null && $apellido === null && $tipoDocumento === null && $nroDocumento === null && $tipo === null && $pais === null && $ciudad === null && $email === null && $telefono === null && $modalidadPago === null) {
+                return $response->withStatus(400)->withJson(['error' => 'Debe ingresar al menos un campo para modificar.']);
+            }
+            if ($idCliente == null || $tipo == null) {
+                return $response->withStatus(400)->withJson(['error' => 'Debe ingresar el idCliente y el tipo para poder modificarlo.']);
+            }
+            if ($tipoDocumento !== null) {
+                $tipoDocumento = strtoupper($tipoDocumento);
+                if (!in_array($tipoDocumento, $tiposDocumentos)) {
+                    return $response->withStatus(400)->withJson(['error' => 'Tipo de documento incorrecto. Debe ser uno de: DNI, LE, LC, PASAPORTE.']);
+                }
+            }
+            if ($modalidadPago !== null) {
+                $modalidadPago = strtoupper($modalidadPago);
+                if (!in_array($modalidadPago, $modalidadesDePago)) {
+                    return $response->withStatus(400)->withJson(['error' => 'Modalidad de pago incorrecta. Debe ser una de: EFECTIVO, TARJETA, MERCADO PAGO.']);
+                }
+            }
+            $tipo = strtoupper($tipo);
+            if (!in_array($tipo, $tiposCliente)) {
+                return $response->withStatus(400)->withJson(['error' => 'Tipo de cliente incorrecto. Debe ser de tipo: INDI o CORPO.']);
+            }
+            if ($email !== null && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return $response->withStatus(400)->withJson(['error' => 'Formato de correo electrónico inválido.']);
+            }
+            if ($nroDocumento !== null && !is_numeric($nroDocumento)) {
+                return $response->withStatus(400)->withJson(['error' => 'El numero de documento tiene que ser un numero valido.']);
+            }
+            if ($telefono !== null && !preg_match('/^[0-9]{10}$/', $telefono)) {
+                return $response->withStatus(400)->withJson(['error' => 'Formato de numero de telefono invalido. Debe contener 10 digitos.']);
+            }
+
+            $cliente = $this->clienteDAO->obtenerCliente($idCliente, $tipo);
+            if (!$cliente) {
+                return $response->withStatus(404)->withJson(['error' => 'No existe el cliente con el tipo y número de cliente proporcionados.']);
+            }
+            // Nuevos datos
+            $nuevosDatos = [
+                'ID' => sprintf('%06d', $cliente['ID']),
+                'nombre' => $nombre ?? $cliente['nombre'],
+                'apellido' => $apellido ?? $cliente['apellido'],
+                'tipoDocumento' => $tipoDocumento ?? $cliente['tipoDocumento'],
+                'nroDocumento' => $nroDocumento ?? $cliente['nroDocumento'],
+                'tipo' => $tipo ?? $cliente['tipo'],
+                'pais' => $pais ?? $cliente['pais'],
+                'ciudad' => $ciudad ?? $cliente['ciudad'],
+                'email' => $email ?? $cliente['email'],
+                'telefono' => $telefono ?? $cliente['telefono'],
+                'modalidadPago' => $modalidadPago ?? $cliente['modalidadPago'],
+                'activo' => $cliente['activo'],
+                'horaDeAlta' => $cliente['horaDeAlta'],
+                'horaDeBaja' => $cliente['horaDeBaja'],
+            ];
+
+            $modificado = $this->clienteDAO->modificarCliente($idCliente, $nuevosDatos);
+            if ($modificado) {
+                return $response->withStatus(200)->withJson(['mensaje' => 'Cliente modificado exitosamente.']);
+            } else {
+                return $response->withStatus(500)->withJson(['error' => 'No se pudo modificar el cliente.']);
+            }
+        } catch (PDOException $e) {
+            return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
+        }
+    }
     public function listarClientes(Request $request, ResponseInterface $response)
     {
         try {

@@ -86,6 +86,26 @@ class ClienteDAO
             return false;
         }
     }
+    public function modificarCliente($id, $nuevosDatos)
+    {
+        try {
+            $campos = '';
+            $valores = [];
+            foreach ($nuevosDatos as $campo => $valor) {
+                $campos .= "$campo = ?, ";
+                $valores[] = $valor;
+            }
+            $campos = rtrim($campos, ', ');
+
+            $stmt = $this->pdo->prepare("UPDATE clientes SET $campos WHERE ID = ?");
+            $valores[] = $id;
+            $stmt->execute($valores);
+            return true;
+        } catch (PDOException $e) {
+            echo 'Error al modificar el cliente: ' . $e->getMessage();
+            return false;
+        }
+    }
     public function obtenerCliente($id, $tipoCliente)
     {
         try {

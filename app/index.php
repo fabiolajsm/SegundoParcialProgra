@@ -43,8 +43,7 @@ $app->group('/clientes', function (RouteCollectorProxy $group) use ($clienteCont
     $group->get('/traerUno', [$clienteController, 'consultarCliente']);
     $group->post('[/]', [$clienteController, 'crearCliente']);
     $group->delete('/borrarCliente', [$clienteController, 'borrarCliente']);
-    // faltan este
-    $group->put('[/]', [$clienteController, 'modificar']);
+    $group->put('[/]', [$clienteController, 'modificarCliente']);
 });
 
 $reservaDAO = new ReservaDAO($pdo);
@@ -62,7 +61,6 @@ $app->group('/reservas', function (RouteCollectorProxy $group) use ($reservaCont
     $group->get('/listarCancelacionesPorTipoCliente', [$reservaController, 'listarCancelacionesPorTipoCliente']);
     $group->get('/listarOperacionesPorCliente', [$reservaController, 'listarOperacionesPorCliente']);
     $group->get('/listarReservasPorModalidad', [$reservaController, 'listarReservasPorModalidad']);
-
 });
 
 $app->run();
