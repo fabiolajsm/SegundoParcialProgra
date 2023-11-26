@@ -26,7 +26,7 @@ class ReservaDAO
         try {
             $horaActual = date('Y-m-d H:i:s');
             $stmt = $this->pdo->prepare("INSERT INTO reservas (nroCliente, tipoCliente, fechaEntrada, fechaSalida, tipoHabitacion, importeTotal, activo, horaDeAlta) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$nroCliente, strtoupper($tipoCliente), $fechaEntrada, $fechaSalida, strtoupper($tipoHabitacion), $importeTotal, 1, $horaActual]);
+            $stmt->execute([$nroCliente, $tipoCliente, $fechaEntrada, $fechaSalida, strtoupper($tipoHabitacion), $importeTotal, 1, $horaActual]);
             return $this->pdo->lastInsertId();
         } catch (PDOException $e) {
             echo 'Error al agregar reserva: ' . $e->getMessage();
@@ -69,6 +69,18 @@ class ReservaDAO
             return $resultados;
         } catch (PDOException $e) {
             echo 'Error al obtener el total de reservas por tipo de habitación y fecha: ' . $e->getMessage();
+            return false;
+        }
+    }
+    public function obtenerReservasEntreFechas($fechaInicio, $fechaFin)
+    {
+        try {
+            $stmt = $this->pdo->prepare("SELECT * FROM reservas WHERE fechaEntrada >= ? AND fechaSalida <= ? AND activo = 1");
+            $stmt->execute([$fechaInicio, $fechaFin]);
+            $reservas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $reservas;
+        } catch (PDOException $e) {
+            echo 'Error al obtener las reservas entre fechas: ' . $e->getMessage();
             return false;
         }
     }

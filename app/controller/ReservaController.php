@@ -53,11 +53,11 @@ class ReservaController
         $fechaEntradaFormateada = $fechaEntradaObj->format('Y-m-d');
         $fechaSalidaFormateada = $fechaSalidaObj->format('Y-m-d');
 
-        if (!$this->reservaDAO->obtenerClientePorIdyTipo($nroCliente, $tipoCliente)) {
+        $clienteExistente = $this->reservaDAO->obtenerClientePorIdyTipo($nroCliente, $tipoCliente);
+        if (!$clienteExistente) {
             return $response->withStatus(400)->withJson(['error' => 'El cliente no ha sido encontrado.']);
         }
-
-        $idReserva = $this->reservaDAO->crearReserva($nroCliente, $tipoCliente, $fechaEntradaFormateada, $fechaSalidaFormateada, $tipoHabitacion, $importeTotal);
+        $idReserva = $this->reservaDAO->crearReserva($nroCliente, $clienteExistente['tipo'], $fechaEntradaFormateada, $fechaSalidaFormateada, $tipoHabitacion, $importeTotal);
         if ($idReserva) {
             $mensajeExito = "Reserva registrada exitosamente, pero hubo un problema al guardar la imagen.";
             $imagenOrigen = 'reservaExitosa.jpg';
@@ -98,7 +98,7 @@ class ReservaController
             $tiposHabitacion = array('SIMPLE', 'DOBLE', 'SUITE');
             $tipoHabitacion = $parametros['tipoHabitacion'] ?? null;
             $fechaConsulta = $parametros['fechaConsulta'] ?? null;
-            
+
             if ($tipoHabitacion == null) {
                 return $response->withStatus(400)->withJson(['error' => 'Tiene que ingresar un tipo de habitación']);
             }
@@ -106,7 +106,7 @@ class ReservaController
             if (!in_array($tipoHabitacion, $tiposHabitacion)) {
                 return $response->withStatus(400)->withJson(['error' => 'Tipo de habitacion incorrecto. Debe ser de tipo: SIMPLE, DOBLE o SUITE.']);
             }
-            
+
             $totalReservas = $this->reservaDAO->obtenerTotalReservasPorTipoYFecha($tipoHabitacion, $fechaConsulta);
             return $response->withStatus(200)->withJson(['totalReservas' => $totalReservas]);
         } catch (PDOException $e) {
@@ -119,7 +119,7 @@ class ReservaController
         try {
             $parametros = $request->getQueryParams();
             $id = $parametros['id'] ?? null;
-    
+
             if ($id == null) {
                 return $response->withStatus(400)->withJson(['error' => 'Debe ingresar el ID de la reserva que desea consultar.']);
             }
@@ -128,6 +128,42 @@ class ReservaController
                 return $response->withStatus(200)->withJson($reserva);
             } else {
                 return $response->withStatus(404)->withJson(['error' => 'No se encontró la reserva.']);
+            }
+        } catch (PDOException $e) {
+            return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
+        }
+    }
+    /* c- El listado de reservas entre dos fechas ordenado por fecha. */
+    public function listarReservasEntreFechas(Request $request, ResponseInterface $response)
+    {
+        try {
+            $parametros = $request->getQueryParams();
+            $fechaInicio = $parametros['fechaInicio'] ?? null;
+            $fechaFin = $parametros['fechaFin'] ?? null;
+
+            if ($fechaInicio == null || $fechaFin == null) {
+                return $response->withStatus(400)->withJson(['error' => 'Debe ingresar las fechas de inicio y fin para la consulta.']);
+            }
+
+            try {
+                $fechaInicioObj = new DateTime($fechaInicio);
+                $fechaFinObj = new DateTime($fechaFin);
+            } catch (Exception $e) {
+                return $response->withStatus(400)->withJson(['error' => 'Error: Las fechas proporcionadas no son válidas.']);
+            }
+
+            $fechaInicioFormateada = $fechaInicioObj->format('Y-m-d');
+            $fechaFinFormateada = $fechaFinObj->format('Y-m-d');
+
+            $reservas = $this->reservaDAO->obtenerReservasEntreFechas($fechaInicioFormateada, $fechaFinFormateada);
+            if ($reservas) {
+                // Ordenar las reservas por fecha
+                usort($reservas, function ($a, $b) {
+                    return strtotime($a['fechaEntrada']) - strtotime($b['fechaEntrada']);
+                });
+                return $response->withStatus(200)->withJson($reservas);
+            } else {
+                return $response->withStatus(404)->withJson(['error' => 'No se encontraron reservas entre las fechas proporcionadas.']);
             }
         } catch (PDOException $e) {
             return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);

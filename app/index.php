@@ -55,6 +55,7 @@ $app->group('/reservas', function (RouteCollectorProxy $group) use ($reservaCont
     $group->get('[/]', [$reservaController, 'listarReservas']);
     $group->get('/traerUno', [$reservaController, 'consultarReserva']);
     $group->get('/consultarPorFecha', [$reservaController, 'consultarReservasPorFecha']);
+    $group->get('/consultarPorFechas', [$reservaController, 'listarReservasEntreFechas']);
 });
 
 $app->run();
