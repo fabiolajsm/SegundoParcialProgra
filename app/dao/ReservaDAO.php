@@ -45,7 +45,7 @@ class ReservaDAO
             return false;
         }
     }
-    public function consultarReserva($id)
+    public function obtenerReservaPorId($id)
     {
         try {
             $stmt = $this->pdo->prepare("SELECT * FROM reservas WHERE ID = ? AND activo = 1");
