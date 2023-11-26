@@ -204,7 +204,7 @@ class ReservaController
             $tiposCliente = array('INDI', 'CORPO');
             $tipoCliente = $parametros['tipoCliente'] ?? null;
             $fechaConsulta = $parametros['fechaConsulta'] ?? null;
-    
+
             if ($tipoCliente == null) {
                 return $response->withStatus(400)->withJson(['error' => 'Tiene que ingresar un tipo de cliente']);
             }
@@ -212,7 +212,7 @@ class ReservaController
             if (!in_array($tipoCliente, $tiposCliente)) {
                 return $response->withStatus(400)->withJson(['error' => 'Tipo de cliente incorrecto. Debe ser de tipo: INDI o CORPO.']);
             }
-            
+
             $totalCancelaciones = $this->reservaDAO->obtenerTotalCancelacionesPorTipoYFecha($tipoCliente, $fechaConsulta);
             return $response->withStatus(200)->withJson(['totalCancelaciones' => $totalCancelaciones]);
         } catch (PDOException $e) {
@@ -220,12 +220,30 @@ class ReservaController
         }
     }
     /* b.2- El listado de cancelaciones para un cliente en particular.*/
+    public function listarCancelacionesPorCliente(Request $request, ResponseInterface $response)
+    {
+        try {
+            $parametros = $request->getQueryParams();
+            $idCliente = $parametros['idCliente'] ?? null;
 
+            if ($idCliente == null) {
+                return $response->withStatus(400)->withJson(['error' => 'Debe ingresar el ID del cliente para consultar las cancelaciones.']);
+            }
+            $cancelaciones = $this->reservaDAO->obtenerCancelacionesPorCliente($idCliente);
+            if ($cancelaciones) {
+                return $response->withStatus(200)->withJson($cancelaciones);
+            } else {
+                return $response->withStatus(404)->withJson(['error' => 'No se encontraron cancelaciones para el cliente proporcionado.']);
+            }
+        } catch (PDOException $e) {
+            return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
+        }
+    }
     /* c.2- El listado de cancelaciones entre dos fechas ordenado por fecha.*/
 
     /* d.2- El listado de cancelaciones por tipo de cliente.*/
 
     /* e.2- El listado de todas las operaciones (reservas y cancelaciones) por usuario.*/
-    
+
     /* f.2- El listado de Reservas por tipo de modalidad. */
 }

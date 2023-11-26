@@ -112,5 +112,17 @@ class ReservaDAO
             return false;
         }
     }
+    public function obtenerCancelacionesPorCliente($idCliente)
+    {
+        try {
+            $stmt = $this->pdo->prepare("SELECT * FROM reservas WHERE nroCliente = ? AND activo = 0");
+            $stmt->execute([$idCliente]);
+            $cancelaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $cancelaciones;
+        } catch (PDOException $e) {
+            echo 'Error al obtener las cancelaciones por cliente: ' . $e->getMessage();
+            return false;
+        }
+    }
 }
 ?>

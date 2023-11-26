@@ -57,6 +57,7 @@ $app->group('/reservas', function (RouteCollectorProxy $group) use ($reservaCont
     $group->get('/consultarPorFecha', [$reservaController, 'consultarReservasPorFecha']);
     $group->get('/porTipoDeHabitacion', [$reservaController, 'listarReservasPorTipoHabitacion']);
     $group->get('/cancelacionesPorTipoClienteYFecha', [$reservaController, 'obtenerTotalCancelacionesPorTipoYFecha']);
+    $group->get('/listarCancelacionesPorCliente', [$reservaController, 'listarCancelacionesPorCliente']);
 });
 
 $app->run();
