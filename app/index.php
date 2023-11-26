@@ -13,6 +13,8 @@ require __DIR__ . '/../vendor/autoload.php';
 
 require './dao/ClienteDAO.php';
 require_once './controller/ClienteController.php';
+require './dao/ReservaDAO.php';
+require_once './controller/ReservaController.php';
 
 // Instantiate App
 $app = AppFactory::create();
@@ -40,8 +42,18 @@ $app->group('/clientes', function (RouteCollectorProxy $group) use ($clienteCont
     $group->get('[/]', [$clienteController, 'listarClientes']);
     $group->get('/traerUno', [$clienteController, 'consultarCliente']);
     $group->post('[/]', [$clienteController, 'crearCliente']);
+    // faltan estos dos
     $group->put('[/]', [$clienteController, 'modificar']);
     $group->get('/borrar', [$clienteController, 'borrar']);
+});
+
+$reservaDAO = new ReservaDAO($pdo);
+$reservaController = new ReservaController($reservaDAO);
+// Grupo de rutas para clientes
+$app->group('/reservas', function (RouteCollectorProxy $group) use ($reservaController) {
+    $group->get('[/]', [$reservaController, 'listarReservas']);
+    $group->get('/traerUno', [$reservaController, 'consultarReserva']);
+    $group->post('[/]', [$reservaController, 'crearReserva']);
 });
 
 $app->run();

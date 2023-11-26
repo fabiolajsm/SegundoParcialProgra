@@ -2,7 +2,6 @@
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface;
 
-require_once './dao/ClienteDAO.php';
 require_once './clases/ManejadorArchivos.php';
 
 class ClienteController
