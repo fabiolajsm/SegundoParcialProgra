@@ -195,4 +195,37 @@ class ReservaController
             return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
         }
     }
+    /* a.2 - El total cancelado (importe) por tipo de cliente y fecha en un día en particular 
+    (se envía por parámetro), si no se pasa fecha, se muestran las del día anterior. */
+    public function obtenerTotalCancelacionesPorTipoYFecha(Request $request, ResponseInterface $response)
+    {
+        try {
+            $parametros = $request->getQueryParams();
+            $tiposCliente = array('INDI', 'CORPO');
+            $tipoCliente = $parametros['tipoCliente'] ?? null;
+            $fechaConsulta = $parametros['fechaConsulta'] ?? null;
+    
+            if ($tipoCliente == null) {
+                return $response->withStatus(400)->withJson(['error' => 'Tiene que ingresar un tipo de cliente']);
+            }
+            $tipoCliente = strtoupper($tipoCliente);
+            if (!in_array($tipoCliente, $tiposCliente)) {
+                return $response->withStatus(400)->withJson(['error' => 'Tipo de cliente incorrecto. Debe ser de tipo: INDI o CORPO.']);
+            }
+            
+            $totalCancelaciones = $this->reservaDAO->obtenerTotalCancelacionesPorTipoYFecha($tipoCliente, $fechaConsulta);
+            return $response->withStatus(200)->withJson(['totalCancelaciones' => $totalCancelaciones]);
+        } catch (PDOException $e) {
+            return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
+        }
+    }
+    /* b.2- El listado de cancelaciones para un cliente en particular.*/
+
+    /* c.2- El listado de cancelaciones entre dos fechas ordenado por fecha.*/
+
+    /* d.2- El listado de cancelaciones por tipo de cliente.*/
+
+    /* e.2- El listado de todas las operaciones (reservas y cancelaciones) por usuario.*/
+    
+    /* f.2- El listado de Reservas por tipo de modalidad. */
 }

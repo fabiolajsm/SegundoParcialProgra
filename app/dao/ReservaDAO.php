@@ -96,5 +96,21 @@ class ReservaDAO
             return false;
         }
     }
+    public function obtenerTotalCancelacionesPorTipoYFecha($tipoCliente, $fecha = null)
+    {
+        try {
+            if ($fecha === null) {
+                $fecha = date('Y-m-d', strtotime('-1 day'));
+            }
+            $tipoBusqueda = '%' . $tipoCliente . '%';
+            $stmt = $this->pdo->prepare("SELECT tipoCliente, COUNT(*) as totalCancelaciones FROM reservas WHERE tipoCliente LIKE ? AND activo = 0 AND horaDeBaja LIKE ? GROUP BY tipoCliente");
+            $stmt->execute([$tipoBusqueda, $fecha . '%']);
+            $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $resultados;
+        } catch (PDOException $e) {
+            echo 'Error al obtener el total de cancelaciones por tipo de cliente y fecha: ' . $e->getMessage();
+            return false;
+        }
+    }
 }
 ?>
