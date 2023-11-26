@@ -52,6 +52,8 @@ $reservaController = new ReservaController($reservaDAO);
 $app->group('/reservas', function (RouteCollectorProxy $group) use ($reservaController) {
     $group->post('[/]', [$reservaController, 'crearReserva']);
     $group->post('/cancelar', [$reservaController, 'cancelarReserva']);
+    $group->post('/ajustar', [$reservaController, 'ajustarReserva']);
+    $group->get('/ajustes', [$reservaController, 'obtenerAjustes']);
     $group->get('[/]', [$reservaController, 'listarReservas']);
     $group->get('/traerUno', [$reservaController, 'consultarReserva']);
     $group->get('/consultarPorFecha', [$reservaController, 'consultarReservasPorFecha']);

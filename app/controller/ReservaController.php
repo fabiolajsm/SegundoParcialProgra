@@ -75,7 +75,19 @@ class ReservaController
             return $response->withStatus(500)->withJson(['error' => 'No se pudo crear la reserva']);
         }
     }
-
+    public function obtenerAjustes(Request $request, ResponseInterface $response)
+    {
+        try {
+            $ajustes = $this->reservaDAO->obtenerAjustes();
+            if ($ajustes) {
+                return $response->withStatus(200)->withJson($ajustes);
+            } else {
+                return $response->withStatus(404)->withJson(['error' => 'No se encontraron ajustes']);
+            }
+        } catch (PDOException $e) {
+            return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
+        }
+    }
     public function listarReservas(Request $request, ResponseInterface $response)
     {
         try {
@@ -377,6 +389,31 @@ class ReservaController
                 return $response->withStatus(200)->withJson(['mensaje' => 'Reserva cancelada exitosamente.']);
             } else {
                 return $response->withStatus(500)->withJson(['error' => 'No se pudo cancelar la reserva.']);
+            }
+        } catch (PDOException $e) {
+            return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
+        }
+    }
+    public function ajustarReserva(Request $request, ResponseInterface $response)
+    {
+        try {
+            $data = $request->getParsedBody();
+            $idReserva = $data['idReserva'] ?? null;
+            $ajuste = $data['ajuste'] ?? null;
+            $motivo = $data['motivo'] ?? null;
+
+            if ($idReserva == null || $ajuste == null || $motivo == null) {
+                return $response->withStatus(400)->withJson(['error' => 'Debe ingresar idReserva, ajuste y motivo.']);
+            }
+            $reserva = $this->reservaDAO->obtenerReservaPorId($idReserva);
+            if (!$reserva) {
+                return $response->withStatus(404)->withJson(['error' => 'La reserva no ha sido encontrada.']);
+            }
+            $ajusteRealizado = $this->reservaDAO->ajustarReserva($idReserva, $ajuste, $motivo);
+            if ($ajusteRealizado) {
+                return $response->withStatus(200)->withJson(['mensaje' => 'Reserva ajustada exitosamente.']);
+            } else {
+                return $response->withStatus(500)->withJson(['error' => 'No se pudo ajustar la reserva.']);
             }
         } catch (PDOException $e) {
             return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);

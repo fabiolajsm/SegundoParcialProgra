@@ -33,6 +33,18 @@ class ReservaDAO
             return false;
         }
     }
+    public function obtenerAjustes()
+    {
+        try {
+            $stmt = $this->pdo->prepare("SELECT * FROM ajustes");
+            $stmt->execute();
+            $reservas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $reservas;
+        } catch (PDOException $e) {
+            echo 'Error al obtener ajustes: ' . $e->getMessage();
+            return false;
+        }
+    }
     public function obtenerReservas()
     {
         try {
@@ -194,6 +206,30 @@ class ReservaDAO
             return true;
         } catch (PDOException $e) {
             echo 'Error al cancelar la reserva: ' . $e->getMessage();
+            return false;
+        }
+    }
+    public function ajustarReserva($idReserva, $ajuste, $motivo)
+    {
+        try {
+            $stmtReserva = $this->pdo->prepare("SELECT * FROM reservas WHERE ID = ? AND activo = 1");
+            $stmtReserva->execute([$idReserva]);
+            $reserva = $stmtReserva->fetch(PDO::FETCH_ASSOC);
+
+            if (!$reserva) {
+                return false;
+            }
+
+            $nuevoImporte = $reserva['importeTotal'] + $ajuste;
+            $stmtUpdateReserva = $this->pdo->prepare("UPDATE reservas SET importeTotal = ? WHERE ID = ?");
+            $stmtUpdateReserva->execute([$nuevoImporte, $idReserva]);
+            // Guardar el ajuste en la tabla ajustes
+            $idCliente = $reserva['nroCliente'];
+            $stmtGuardarAjuste = $this->pdo->prepare("INSERT INTO ajustes (idReserva, idCliente, montoAjuste, motivo) VALUES (?, ?, ?, ?)");
+            $stmtGuardarAjuste->execute([$idReserva, $idCliente, $ajuste, $motivo]);
+            return true;
+        } catch (PDOException $e) {
+            echo 'Error al ajustar la reserva: ' . $e->getMessage();
             return false;
         }
     }
