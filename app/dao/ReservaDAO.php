@@ -11,8 +11,9 @@ class ReservaDAO
     public function obtenerClientePorIdyTipo($id, $tipo)
     {
         try {
-            $stmt = $this->pdo->prepare("SELECT * FROM clientes WHERE ID = ? AND tipo = ? AND activo = 1");
-            $stmt->execute([$id, $tipo]);
+            $tipoBusqueda = '%' . $tipo . '%';
+            $stmt = $this->pdo->prepare("SELECT * FROM clientes WHERE ID = ? AND tipo LIKE ? AND activo = 1");
+            $stmt->execute([$id, $tipoBusqueda]);
             $cliente = $stmt->fetch(PDO::FETCH_ASSOC);
             return $cliente;
         } catch (PDOException $e) {
@@ -53,6 +54,21 @@ class ReservaDAO
             return $reserva;
         } catch (PDOException $e) {
             echo 'Error al obtener la reserva: ' . $e->getMessage();
+            return false;
+        }
+    }
+    public function obtenerTotalReservasPorTipoYFecha($tipoHabitacion, $fecha = null)
+    {
+        try {
+            if ($fecha === null) {
+                $fecha = date('Y-m-d', strtotime('-1 day'));
+            }
+            $stmt = $this->pdo->prepare("SELECT tipoHabitacion, SUM(importeTotal) as totalImporte FROM reservas WHERE fechaEntrada = ? GROUP BY tipoHabitacion");
+            $stmt->execute([$fecha]);
+            $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $resultados;
+        } catch (PDOException $e) {
+            echo 'Error al obtener el total de reservas por tipo de habitación y fecha: ' . $e->getMessage();
             return false;
         }
     }

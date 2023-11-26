@@ -51,9 +51,10 @@ $reservaDAO = new ReservaDAO($pdo);
 $reservaController = new ReservaController($reservaDAO);
 // Grupo de rutas para clientes
 $app->group('/reservas', function (RouteCollectorProxy $group) use ($reservaController) {
+    $group->post('[/]', [$reservaController, 'crearReserva']);
     $group->get('[/]', [$reservaController, 'listarReservas']);
     $group->get('/traerUno', [$reservaController, 'consultarReserva']);
-    $group->post('[/]', [$reservaController, 'crearReserva']);
+    $group->get('/consultarPorFecha', [$reservaController, 'consultarReservasPorFecha']);
 });
 
 $app->run();

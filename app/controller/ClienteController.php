@@ -40,6 +40,7 @@ class ClienteController
         if (!in_array($tipoDocumento, $tiposDocumentos)) {
             return $response->withStatus(400)->withJson(['error' => 'Tipo de documento incorrecto. Debe ser uno de: DNI, LE, LC, PASAPORTE.']);
         }
+        $modalidadPago = strtoupper($modalidadPago);
         if (!in_array($modalidadPago, $modalidadesDePago)) {
             return $response->withStatus(400)->withJson(['error' => 'Modalidad de pago incorrecta. Debe ser una de: EFECTIVO, TARJETA, MERCADO PAGO.']);
         }
@@ -113,7 +114,8 @@ class ClienteController
 
             $cliente = $this->clienteDAO->obtenerClientePorId($id);
             if ($cliente) {
-                if ($cliente['tipo'] !== $tipo) {
+                $tipoDelCliente = $tipo . '-' . $cliente['tipoDocumento'];
+                if ($cliente['tipo'] !== $tipoDelCliente) {
                     return $response->withStatus(200)->withJson(['error', 'Tipo de cliente incorrecto']);
                 }
                 $datosCliente = [

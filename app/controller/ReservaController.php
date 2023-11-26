@@ -108,4 +108,29 @@ class ReservaController
             return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
         }
     }
+    /* a- El total de reservas (importe) por tipo de habitación y fecha en un día en particular
+    (se envía por parámetro), si no se pasa fecha, se muestran las del día anterior.*/
+    public function consultarReservasPorFecha(Request $request, ResponseInterface $response)
+    {
+        try {
+            $parametros = $request->getQueryParams();
+            $tiposHabitacion = array('SIMPLE', 'DOBLE', 'SUITE');
+            $tipoHabitacion = $parametros['tipoHabitacion'] ?? null;
+            $fechaConsulta = $parametros['fechaConsulta'] ?? null;
+
+            if ($tipoHabitacion == null) {
+                return $response->withStatus(400)->withJson(['error' => 'Tiene que ingresar un tipo de habitación']);
+            }
+            $tipoHabitacion = strtoupper($tipoHabitacion);
+            if (!in_array($tipoHabitacion, $tiposHabitacion)) {
+                return $response->withStatus(400)->withJson(['error' => 'Tipo de habitacion incorrecto. Debe ser de tipo: SIMPLE, DOBLE o SUITE.']);
+            }
+
+            $totalReservas = $this->reservaDAO->obtenerTotalReservasPorTipoYFecha($tipoHabitacion, $fechaConsulta);
+            return $response->withStatus(200)->withJson(['totalReservas' => $totalReservas]);
+        } catch (PDOException $e) {
+            return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
+        }
+    }
+
 }
