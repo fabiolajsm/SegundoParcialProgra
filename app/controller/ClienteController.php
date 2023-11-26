@@ -37,6 +37,7 @@ class ClienteController
         if (empty($nombre) || empty($apellido) || empty($email) || empty($tipoDocumento) || empty($nroDocumento) || empty($tipo) || empty($pais) || empty($ciudad) || empty($telefono) || $fotoDelCliente == null) {
             return $response->withStatus(400)->withJson(['error' => 'Completar datos obligatorios: nombre, apellido, email, tipoDocumento, nroDocumento, tipo, pais, ciudad, fotoDelCliente y telefono.']);
         }
+        $tipoDocumento = strtoupper($tipoDocumento);
         if (!in_array($tipoDocumento, $tiposDocumentos)) {
             return $response->withStatus(400)->withJson(['error' => 'Tipo de documento incorrecto. Debe ser uno de: DNI, LE, LC, PASAPORTE.']);
         }

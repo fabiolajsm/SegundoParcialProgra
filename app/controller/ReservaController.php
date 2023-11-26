@@ -135,7 +135,7 @@ class ReservaController
             if ($id == null) {
                 return $response->withStatus(400)->withJson(['error' => 'Debe ingresar el ID de la reserva que desea consultar.']);
             }
-            $reserva = $this->reservaDAO->obtenerReservaPorId($id);
+            $reserva = $this->reservaDAO->obtenerReservaPorIdCliente($id);
             if ($reserva) {
                 return $response->withStatus(200)->withJson($reserva);
             } else {

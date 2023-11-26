@@ -69,6 +69,18 @@ class ReservaDAO
             return false;
         }
     }
+    public function obtenerReservaPorIdCliente($id)
+    {
+        try {
+            $stmt = $this->pdo->prepare("SELECT * FROM reservas WHERE nroCliente = ? AND activo = 1");
+            $stmt->execute([$id]);
+            $reserva = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $reserva;
+        } catch (PDOException $e) {
+            echo 'Error al obtener la reserva: ' . $e->getMessage();
+            return false;
+        }
+    }
     public function obtenerTotalReservasPorTipoYFecha($tipoHabitacion, $fecha = null)
     {
         try {
@@ -111,12 +123,15 @@ class ReservaDAO
     public function obtenerTotalCancelacionesPorTipoYFecha($tipoCliente, $fecha = null)
     {
         try {
-            if ($fecha === null) {
-                $fecha = date('Y-m-d', strtotime('-1 day'));
-            }
             $tipoBusqueda = '%' . $tipoCliente . '%';
-            $stmt = $this->pdo->prepare("SELECT tipoCliente, COUNT(*) as totalCancelaciones FROM reservas WHERE tipoCliente LIKE ? AND activo = 0 AND fechaCancelacion LIKE ? GROUP BY tipoCliente");
-            $stmt->execute([$tipoBusqueda, $fecha . '%']);
+
+            if ($fecha === null) {
+                $stmt = $this->pdo->prepare("SELECT tipoCliente, COUNT(*) as totalCancelaciones FROM reservas WHERE tipoCliente LIKE ? AND activo = 0 GROUP BY tipoCliente");
+                $stmt->execute([$tipoBusqueda]);
+            } else {
+                $stmt = $this->pdo->prepare("SELECT tipoCliente, COUNT(*) as totalCancelaciones FROM reservas WHERE tipoCliente LIKE ? AND activo = 0 AND fechaCancelacion LIKE ? GROUP BY tipoCliente");
+                $stmt->execute([$tipoBusqueda, $fecha . '%']);
+            }
             $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return $resultados;
         } catch (PDOException $e) {

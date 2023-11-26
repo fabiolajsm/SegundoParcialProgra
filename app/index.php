@@ -55,8 +55,9 @@ $app->group('/reservas', function (RouteCollectorProxy $group) use ($reservaCont
     $group->post('/ajustar', [$reservaController, 'ajustarReserva']);
     $group->get('/ajustes', [$reservaController, 'obtenerAjustes']);
     $group->get('[/]', [$reservaController, 'listarReservas']);
-    $group->get('/traerUno', [$reservaController, 'consultarReserva']);
     $group->get('/consultarPorFecha', [$reservaController, 'consultarReservasPorFecha']);
+    $group->get('/traerUno', [$reservaController, 'consultarReserva']);
+    $group->get('/listarReservasEntreFechas', [$reservaController, 'listarReservasEntreFechas']);
     $group->get('/porTipoDeHabitacion', [$reservaController, 'listarReservasPorTipoHabitacion']);
     $group->get('/cancelacionesPorTipoClienteYFecha', [$reservaController, 'obtenerTotalCancelacionesPorTipoYFecha']);
     $group->get('/listarCancelacionesPorCliente', [$reservaController, 'listarCancelacionesPorCliente']);
