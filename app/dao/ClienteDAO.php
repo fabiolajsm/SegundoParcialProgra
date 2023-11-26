@@ -8,11 +8,11 @@ class ClienteDAO
     {
         $this->pdo = $pdo;
     }
-    public function existeCliente($nombre, $apellido, $tipo)
+    public function existeCliente($nroDocumento)
     {
         try {
-            $stmt = $this->pdo->prepare("SELECT * FROM clientes WHERE nombre = ? AND apellido = ? AND tipo = ? AND activo = 1");
-            $stmt->execute([$nombre, $apellido, $tipo]);
+            $stmt = $this->pdo->prepare("SELECT * FROM clientes WHERE nroDocumento = ? AND activo = 1");
+            $stmt->execute([$nroDocumento]);
             $cliente = $stmt->fetch(PDO::FETCH_ASSOC);
             return $cliente;
         } catch (PDOException $e) {

@@ -62,10 +62,10 @@ class ClienteController
                 return $response->withStatus(400)->withJson(['error' => 'La foto del cliente debe ser JPG o JPEG valido.']);
             }
         }
-        if ($this->clienteDAO->existeCliente($nombre, $apellido, $tipo)) {
+        if ($this->clienteDAO->existeCliente($nroDocumento)) {
             return $response->withStatus(400)->withJson(['error' => 'Ya existe el cliente: ' . $nombre . ' ' . $apellido . ' y tipo ' . $tipo]);
         }
-
+        $tipo = $tipo . '-' . $tipoDocumento;
         $idCliente = $this->clienteDAO->crearCliente($nombre, $apellido, $tipoDocumento, $nroDocumento, $tipo, $pais, $ciudad, $email, $telefono, $modalidadPago);
         if ($idCliente) {
             $imagenID = $idCliente . $tipo;
