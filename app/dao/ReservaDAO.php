@@ -185,5 +185,17 @@ class ReservaDAO
             return false;
         }
     }
+    public function cancelarReserva($idReserva)
+    {
+        try {
+            $fechaCancelacion = date('Y-m-d');
+            $stmt = $this->pdo->prepare("UPDATE reservas SET activo = 0, fechaCancelacion = ? WHERE ID = ?");
+            $stmt->execute([$fechaCancelacion, $idReserva]);
+            return true;
+        } catch (PDOException $e) {
+            echo 'Error al cancelar la reserva: ' . $e->getMessage();
+            return false;
+        }
+    }
 }
 ?>

@@ -344,4 +344,42 @@ class ReservaController
             return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
         }
     }
+    public function cancelarReserva(Request $request, ResponseInterface $response)
+    {
+        try {
+            $data = $request->getParsedBody();
+            $tipoCliente = $data['tipoCliente'] ?? null;
+            $nroCliente = $data['nroCliente'] ?? null;
+            $idReserva = $data['idReserva'] ?? null;
+            $tiposCliente = array('INDI', 'CORPO');
+
+            if ($tipoCliente == null || $nroCliente == null || $idReserva == null) {
+                return $response->withStatus(400)->withJson(['error' => 'Debe ingresar tipoCliente, nroCliente y idReserva.']);
+            }
+
+            $tipoCliente = strtoupper($tipoCliente);
+            if (!in_array($tipoCliente, $tiposCliente)) {
+                return $response->withStatus(400)->withJson(['error' => 'Tipo de cliente incorrecto. Debe ser de tipo: INDI o CORPO.']);
+            }
+
+            $clienteExistente = $this->reservaDAO->obtenerClientePorIdyTipo($nroCliente, $tipoCliente);
+            if (!$clienteExistente) {
+                return $response->withStatus(400)->withJson(['error' => 'El cliente no ha sido encontrado.']);
+            }
+
+            $reserva = $this->reservaDAO->obtenerReservaPorId($idReserva);
+            if (!$reserva) {
+                return $response->withStatus(404)->withJson(['error' => 'La reserva no ha sido encontrada.']);
+            }
+
+            $cancelada = $this->reservaDAO->cancelarReserva($idReserva);
+            if ($cancelada) {
+                return $response->withStatus(200)->withJson(['mensaje' => 'Reserva cancelada exitosamente.']);
+            } else {
+                return $response->withStatus(500)->withJson(['error' => 'No se pudo cancelar la reserva.']);
+            }
+        } catch (PDOException $e) {
+            return $response->withStatus(500)->withJson(['error' => 'Error en la base de datos']);
+        }
+    }
 }
