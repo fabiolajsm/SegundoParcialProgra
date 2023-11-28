@@ -15,6 +15,8 @@ require './dao/ClienteDAO.php';
 require_once './controller/ClienteController.php';
 require './dao/ReservaDAO.php';
 require_once './controller/ReservaController.php';
+require './dao/UsuarioDAO.php';
+require_once './controller/UsuarioController.php';
 
 // Instantiate App
 $app = AppFactory::create();
@@ -65,6 +67,15 @@ $app->group('/reservas', function (RouteCollectorProxy $group) use ($reservaCont
     $group->get('/listarCancelacionesPorTipoCliente', [$reservaController, 'listarCancelacionesPorTipoCliente']);
     $group->get('/listarOperacionesPorCliente', [$reservaController, 'listarOperacionesPorCliente']);
     $group->get('/listarReservasPorModalidad', [$reservaController, 'listarReservasPorModalidad']);
+});
+
+$usuarioDAO = new UsuarioDAO($pdo);
+$usuarioController = new UsuarioController($usuarioDAO);
+// Grupo de rutas para usuarios
+$app->group('/usuarios', function (RouteCollectorProxy $group) use ($usuarioController) {
+    $group->post('[/]', [$usuarioController, 'altaUsuario']);
+    $group->get('/login', [$usuarioController, 'login']);
+    $group->get('[/]', [$usuarioController, 'listarUsuarios']);
 });
 
 $app->run();
