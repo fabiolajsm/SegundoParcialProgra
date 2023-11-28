@@ -17,6 +17,7 @@ require './dao/ReservaDAO.php';
 require_once './controller/ReservaController.php';
 require './dao/UsuarioDAO.php';
 require_once './controller/UsuarioController.php';
+require './middlewares/AuthTokenMiddleware.php';
 
 // Instantiate App
 $app = AppFactory::create();
@@ -41,32 +42,32 @@ $clienteDAO = new ClienteDAO($pdo);
 $clienteController = new ClienteController($clienteDAO);
 // Grupo de rutas para clientes
 $app->group('/clientes', function (RouteCollectorProxy $group) use ($clienteController) {
-    $group->get('[/]', [$clienteController, 'listarClientes']);
-    $group->get('/traerUno', [$clienteController, 'consultarCliente']);
-    $group->post('[/]', [$clienteController, 'crearCliente']);
-    $group->delete('/borrarCliente', [$clienteController, 'borrarCliente']);
-    $group->put('[/]', [$clienteController, 'modificarCliente']);
+    $group->get('[/]', [$clienteController, 'listarClientes'])->add(\AuthTokenMiddleware::class . ":validarRol");
+    $group->get('/traerUno', [$clienteController, 'consultarCliente'])->add(\AuthTokenMiddleware::class . ":validarRol");
+    $group->post('[/]', [$clienteController, 'crearCliente'])->add(\AuthTokenMiddleware::class . ":validarGerente");
+    $group->delete('/borrarCliente', [$clienteController, 'borrarCliente'])->add(\AuthTokenMiddleware::class . ":validarGerente");
+    $group->put('[/]', [$clienteController, 'modificarCliente'])->add(\AuthTokenMiddleware::class . ":validarRol");
 });
 
 $reservaDAO = new ReservaDAO($pdo);
 $reservaController = new ReservaController($reservaDAO);
 // Grupo de rutas para reservas
 $app->group('/reservas', function (RouteCollectorProxy $group) use ($reservaController) {
-    $group->post('[/]', [$reservaController, 'crearReserva']);
-    $group->post('/cancelar', [$reservaController, 'cancelarReserva']);
-    $group->post('/ajustar', [$reservaController, 'ajustarReserva']);
-    $group->get('/ajustes', [$reservaController, 'obtenerAjustes']);
-    $group->get('[/]', [$reservaController, 'listarReservas']);
-    $group->get('/consultarPorFecha', [$reservaController, 'consultarReservasPorFecha']);
-    $group->get('/traerUno', [$reservaController, 'consultarReserva']);
-    $group->get('/listarReservasEntreFechas', [$reservaController, 'listarReservasEntreFechas']);
-    $group->get('/porTipoDeHabitacion', [$reservaController, 'listarReservasPorTipoHabitacion']);
-    $group->get('/cancelacionesPorTipoClienteYFecha', [$reservaController, 'obtenerTotalCancelacionesPorTipoYFecha']);
-    $group->get('/listarCancelacionesPorCliente', [$reservaController, 'listarCancelacionesPorCliente']);
-    $group->get('/listarCancelacionesEntreFechas', [$reservaController, 'listarCancelacionesEntreFechas']);
-    $group->get('/listarCancelacionesPorTipoCliente', [$reservaController, 'listarCancelacionesPorTipoCliente']);
-    $group->get('/listarOperacionesPorCliente', [$reservaController, 'listarOperacionesPorCliente']);
-    $group->get('/listarReservasPorModalidad', [$reservaController, 'listarReservasPorModalidad']);
+    $group->post('[/]', [$reservaController, 'crearReserva'])->add(\AuthTokenMiddleware::class . ":validarRecepcionistaOGerente");
+    $group->post('/cancelar', [$reservaController, 'cancelarReserva'])->add(\AuthTokenMiddleware::class . ":validarRecepcionistaOGerente");
+    $group->post('/ajustar', [$reservaController, 'ajustarReserva'])->add(\AuthTokenMiddleware::class . ":validarRecepcionistaOGerente");
+    $group->get('/ajustes', [$reservaController, 'obtenerAjustes'])->add(\AuthTokenMiddleware::class . ":validarRecepcionistaOGerente");
+    $group->get('[/]', [$reservaController, 'listarReservas'])->add(\AuthTokenMiddleware::class . ":validarRecepcionistaOCliente");
+    $group->get('/consultarPorFecha', [$reservaController, 'consultarReservasPorFecha'])->add(\AuthTokenMiddleware::class . ":validarRecepcionistaOCliente");
+    $group->get('/traerUno', [$reservaController, 'consultarReserva'])->add(\AuthTokenMiddleware::class . ":validarRecepcionistaOCliente");
+    $group->get('/listarReservasEntreFechas', [$reservaController, 'listarReservasEntreFechas'])->add(\AuthTokenMiddleware::class . ":validarRecepcionistaOCliente");
+    $group->get('/porTipoDeHabitacion', [$reservaController, 'listarReservasPorTipoHabitacion'])->add(\AuthTokenMiddleware::class . ":validarRecepcionistaOCliente");
+    $group->get('/cancelacionesPorTipoClienteYFecha', [$reservaController, 'obtenerTotalCancelacionesPorTipoYFecha'])->add(\AuthTokenMiddleware::class . ":validarRecepcionistaOCliente");
+    $group->get('/listarCancelacionesPorCliente', [$reservaController, 'listarCancelacionesPorCliente'])->add(\AuthTokenMiddleware::class . ":validarRecepcionistaOCliente");
+    $group->get('/listarCancelacionesEntreFechas', [$reservaController, 'listarCancelacionesEntreFechas'])->add(\AuthTokenMiddleware::class . ":validarRecepcionistaOCliente");
+    $group->get('/listarCancelacionesPorTipoCliente', [$reservaController, 'listarCancelacionesPorTipoCliente'])->add(\AuthTokenMiddleware::class . ":validarRecepcionistaOCliente");
+    $group->get('/listarOperacionesPorCliente', [$reservaController, 'listarOperacionesPorCliente'])->add(\AuthTokenMiddleware::class . ":validarRecepcionistaOCliente");
+    $group->get('/listarReservasPorModalidad', [$reservaController, 'listarReservasPorModalidad'])->add(\AuthTokenMiddleware::class . ":validarRecepcionistaOCliente");
 });
 
 $usuarioDAO = new UsuarioDAO($pdo);
