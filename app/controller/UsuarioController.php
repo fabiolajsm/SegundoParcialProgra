@@ -22,9 +22,10 @@ class UsuarioController
             if ($usuario == null || $contrasena == null || empty($usuario) || empty($contrasena)) {
                 return $response->withStatus(404)->withJson(['error' => 'Debe ingresar el  del usuario y contrasena.']);
             }
+            $usuario = strtoupper($usuario);
             $usuarioEncontrado = $this->usuarioDAO->login($usuario, $contrasena);
             if ($usuarioEncontrado) {
-                $datos = array('usuario' => $usuario, 'cargoEmpleado' => $usuarioEncontrado['tipo']);
+                $datos = array('usuario' => $usuario, 'rol' => $usuarioEncontrado['rol']);
                 $token = AutentificadorJWT::CrearToken($datos);
                 $payload = array('jwt' => $token);
                 return $response->withStatus(200)->withJson($payload);

@@ -46,7 +46,7 @@ class UsuarioDAO
             $stmt->execute(['usuario' => strtolower($usuario)]);
 
             $usuarioEncontrado = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($usuarioEncontrado && password_verify($contrasena, $usuarioEncontrado['contrasena'])) {
+            if ($usuarioEncontrado && password_verify($contrasena, $usuarioEncontrado['password'])) {
                 return $usuarioEncontrado;
             } else {
                 return null;

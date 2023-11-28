@@ -63,13 +63,13 @@ class AutentificadorJWT
         )->data;
     }
 
-    public static function ObtenerCargo($token)
+    public static function ObtenerRol($token)
     {
         return JWT::decode(
             $token,
             self::$claveSecreta,
             self::$tipoEncriptacion
-        )->data->cargoEmpleado;
+        )->data->rol;
     }
 
     private static function Aud()
